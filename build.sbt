@@ -47,7 +47,8 @@ lazy val client = (project in file("client")).settings(
     "org.scala-js" %%% "scalajs-dom" % "0.8.0",
     "com.lihaoyi" %%% "upickle" % "0.3.6",
     "eu.unicredit" %%% "paths-scala-js" % "0.3.2",
-    "com.github.japgolly.scalajs-react" %%% "core" % "0.10.1"
+    "com.github.japgolly.scalajs-react" %%% "core" % "0.10.1",
+    "com.github.japgolly.scalajs-react" %%% "extra" % "0.10.1"
   ),
   jsDependencies ++= Seq(
     "org.webjars" % "paths-js" % "0.3.2" / "paths.js",

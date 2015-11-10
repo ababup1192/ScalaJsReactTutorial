@@ -10,14 +10,10 @@ object ScalaJSMain extends js.JSApp {
 
   override def main(): Unit = {
 
-    val comments = List(
-      Comment("uni", "hello"),
-      Comment("kani", "Yeah!"),
-      Comment("uni", "Foo!")
-    )
+    val model = new CommentModel()
 
     ReactDOM.render(
-      CommentBox(comments), document.getElementById("example")
+      CommentBox(model), document.getElementById("example")
     )
   }
 }

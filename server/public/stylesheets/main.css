@@ -1,3 +1,23 @@
 #example {
     padding: 50px;
 }
+
+.commentList {
+    border: solid 1px #333;
+    background: #ddd;
+    width: 500px;
+    height: 300px;
+}
+
+#inputName {
+    width: 100px;
+}
+
+#inputText {
+    margin-left: 30px;
+    width: 300px;
+}
+
+pre{
+    overflow-x: auto;
+}
