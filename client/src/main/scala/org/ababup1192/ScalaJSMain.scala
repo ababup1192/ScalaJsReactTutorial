@@ -10,32 +10,32 @@ import scala.scalajs.js
 object ScalaJSMain extends js.JSApp {
 
   override def main(): Unit = {
-    val componentList = ReactComponentB[Unit]("ComponentList")
+    val commentList = ReactComponentB[Unit]("CommentList")
       .render(_ =>
-        div(className := "componentList",
+        div(className := "commentList",
           "Hello, world! I am a CommentList."
         )
       ).build
 
-    val componentForm = ReactComponentB[Unit]("ComponentForm")
+    val commentForm = ReactComponentB[Unit]("CommentForm")
       .render(_ =>
-        div(className := "componentForm",
+        div(className := "commentForm",
           "Hello, world! I am a CommentForm."
         )
       ).build
 
-    val componentBox = ReactComponentB[Unit]("ComponentBox")
+    val commentBox = ReactComponentB[Unit]("CommentBox")
       .render($ =>
         div(className := "commentBox",
           h1("Components"),
-          componentList($),
-          componentForm($)
+          commentList($),
+          commentForm($)
         )
       ).buildU
 
 
     ReactDOM.render(
-      componentBox(), document.getElementById("example")
+      commentBox(), document.getElementById("example")
     )
   }
 }
