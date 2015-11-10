@@ -9,9 +9,15 @@ import scala.scalajs.js
 
 object ScalaJSMain extends js.JSApp {
 
-  case class Comment(author: String)
+  case class Comment(author: String, text: String)
 
   override def main(): Unit = {
+
+    val comments = List(
+      Comment("uni", "hello"),
+      Comment("kani", "Yeah!"),
+      Comment("uni", "Foo!")
+    )
 
     val comment = ReactComponentB[Comment]("Comment")
       .render($ =>
@@ -20,19 +26,21 @@ object ScalaJSMain extends js.JSApp {
             $.props.author
           ),
           p(
-            $.propsChildren
+            $.props.text
           )
         )
       ).build
 
-    val commentList = ReactComponentB[Unit]("CommentList")
-      .render(_ =>
+    val commentList = ReactComponentB[List[Comment]]("CommentList")
+      .render { $ =>
+        val commentNodes = $.props.map { c =>
+          comment(c)
+        }
+
         div(className := "commentList",
-          comment(Comment("uni"), "hello!"),
-          comment(Comment("kani"), "Yeah!"),
-          comment(Comment("uni"), "Foo!")
+          commentNodes
         )
-      ).buildU
+      }.build
 
     val commentForm = ReactComponentB[Unit]("CommentForm")
       .render(_ =>
@@ -45,7 +53,7 @@ object ScalaJSMain extends js.JSApp {
       .render($ =>
         div(className := "commentBox",
           h1("Components"),
-          commentList(),
+          commentList(comments),
           commentForm()
         )
       ).buildU
