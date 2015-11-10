@@ -1,57 +1,89 @@
 package org.ababup1192
 
 import japgolly.scalajs.react._
-import japgolly.scalajs.react.vdom.all._
-
-case class Comment(author: String, text: String)
+import japgolly.scalajs.react.extra.{Listenable, OnUnmount, Px, Reusability}
+import japgolly.scalajs.react.vdom.prefix_<^._
+import org.scalajs.dom.ext.KeyCode
+import org.scalajs.dom.raw.HTMLInputElement
 
 object CommentBox {
 
-  val comment = ReactComponentB[Comment]("Comment")
-    .render_P(comment =>
-      div(className := "comment",
-        h2(className := "commentAuthor",
-          comment.author
-        ),
-        p(
-          comment.text
-        )
-      )
-    ).build
+  case class Props private[CommentBox](model: CommentModel)
 
-  val commentList = ReactComponentB[List[Comment]]("CommentList")
-    .render_P { comments =>
-      val commentNodes = comments.map { c =>
-        comment(c)
-      }
+  case class State(comments: Seq[Comment])
 
-      div(className := "commentList",
-        commentNodes
+  implicit val r = Reusability.fn[Props]((p1, p2) => p1 == p2)
+
+  private val commentList = ReactComponentB[State]("CommentList")
+    .render_P { state =>
+      val comments = state.comments.map {
+        case Comment(CommentId(uuid), NameWithText(name, value)) =>
+          s"$name: $value"
+      }.mkString("\n")
+
+      <.pre(^.className := "commentList",
+        ^.width := "90ex",
+        ^.height := "20em",
+        comments
       )
     }.build
 
-  val commentForm = ReactComponentB[Unit]("CommentForm")
-    .render(_ =>
-      div(className := "commentForm",
-        "Hello, world! I am a CommentForm."
-      )
-    ).buildU
+  class FormBackEnd($: BackendScope[Props, Unit]) extends OnUnmount {
+    val inputName = Ref[HTMLInputElement]("inputName")
 
-  val commentBox = ReactComponentB[List[Comment]]("CommentBox")
-    .render_P(comments =>
-      div(className := "commentBox",
-        h1("Components"),
-        commentList(comments),
-        commentForm()
-      )
-    ).build
+    case class Callbacks(P: Props) {
+      val handleNewTodoKeyDown: ReactKeyboardEventI => Option[Callback] =
+        e => Some((e.nativeEvent.keyCode,
+          UnfinishedComment(inputName($).get.value, e.target.value).validated)) collect {
+          case (KeyCode.Enter, Some(nameWithText)) =>
+            Callback(e.target.value = "") >> P.model.addComment(nameWithText)
+        }
+    }
 
-  def apply() = {
-    commentBox(List.empty[Comment])
+    val cbs = Px.cbM($.props).map(Callbacks)
+
+    def render(P: Props) = {
+      val callbacks = cbs.value()
+
+      <.div(
+        <.input(
+          ^.id := "inputName",
+          ^.ref := inputName,
+          ^.placeholder := "Input your name",
+          ^.autoFocus := true
+        ),
+        <.input(
+          ^.id := "inputText",
+          ^.placeholder := "Input your comment",
+          ^.onKeyDown ==>? callbacks.handleNewTodoKeyDown
+        )
+      )
+    }
   }
 
-  def apply(comments: List[Comment]) = {
-    commentBox(comments)
+  private val commentForm = ReactComponentB[Props]("CommentForm")
+    .renderBackend[FormBackEnd]
+    .build
+
+  class CommentBoxBackEnd($: BackendScope[Props, State]) extends OnUnmount {
+    def render(props: Props, state: State) = {
+      <.div(^.className := "commentBox",
+        <.h1("CommentBox"),
+        commentList(state),
+        commentForm(props)
+      )
+    }
   }
 
+  val commentBox = ReactComponentB[Props]("CommentBox")
+    .initialState(State(Vector.empty[Comment]))
+    .renderBackend[CommentBoxBackEnd]
+    .configure(Listenable.install(
+      (p: Props) => p.model, $ => (comments: Seq[Comment]) =>
+        $.modState(_.copy(comments = comments))))
+    .build
+
+  def apply(model: CommentModel) = {
+    commentBox(Props(model))
+  }
 }
